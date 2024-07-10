@@ -11,8 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import time
 
-from default_config import DEFAULT_CONFIG
-cfg = DEFAULT_CONFIG
+from configs import CONFIG
 
 PI = 3.1415926535897
 
@@ -93,7 +92,7 @@ class Robot:
     def translate(self, time, vx=0.02):
         t0 = rospy.Time.now().to_sec()
         while rospy.Time.now().to_sec() - t0 <= time:
-            if self.sensor_distance < cfg["VECTOR_LENGTH"]:
+            if self.sensor_distance < CONFIG["VECTOR_LENGTH"]:
                 self.stop()
             else:
                 self.set_speed(vx)
@@ -118,14 +117,12 @@ class Robot:
         self.stop()
 
     def plot_robot(self):
-        # fig,axe = plt.gcf(),plt.gca()
         x, y, z, theta = self.get_state()
         print(f'$$$ plot_robot: x={x:0.3f}, y={y:0.3f}, theta={theta:0.3f}')
-        # print(x,y)
         plt.plot(x, y, color='green', marker="o", markersize=8)
-        plt.plot(*self.get_sensor_line(x, y, theta), c="blue")
+        plt.plot(*self.get_sensor_line(x, y, theta), c="green")
 
-    def get_sensor_line(self, x, y, theta, range=cfg["SENSOR_MAX_DISTANCE"]):
+    def get_sensor_line(self, x, y, theta, range=CONFIG["SENSOR_MAX_DISTANCE"]):
         x1 = x
         x2 = x + range * np.cos(theta)
         y1 = y
