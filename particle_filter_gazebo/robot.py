@@ -17,16 +17,19 @@ PI = 3.1415926535897
 
 
 class Robot:
-    def __init__(self, x=0.0, y=0.0, theta=0.0, model_name='robot'):
+    def __init__(self, x=0.0, y=0.0, theta=0.0, model_name="robot"):
         self.model_name = model_name
         self.sensor_distance = 0
-        rospy.init_node('vector_controller', anonymous=True)
-        self.laser_subscriber = rospy.Subscriber('/vector/laser', Range, self.laser_callback)
-        self.velocity_publisher = rospy.Publisher('/vector/cmd_vel', Twist, queue_size=10)
+        rospy.init_node("vector_controller", anonymous=True)
+        self.laser_subscriber = rospy.Subscriber(
+            "/vector/laser", Range, self.laser_callback
+        )
+        self.velocity_publisher = rospy.Publisher(
+            "/vector/cmd_vel", Twist, queue_size=10
+        )
         time.sleep(2)
         self.stop()
         self.set_state(x, y, theta)
-        
 
     def set_state(self, x, y, theta):
         state_msg = ModelState()
@@ -40,27 +43,27 @@ class Robot:
         state_msg.pose.orientation.z = q[2]
         state_msg.pose.orientation.w = q[3]
 
-        rospy.wait_for_service('/gazebo/set_model_state')
+        rospy.wait_for_service("/gazebo/set_model_state")
         print('$$$ Service: "/gazebo/set_model_state" for set called.')
         try:
-            set_state = rospy.ServiceProxy(
-                '/gazebo/set_model_state', SetModelState)
+            set_state = rospy.ServiceProxy("/gazebo/set_model_state", SetModelState)
             resp = set_state(state_msg)
         except rospy.ServiceException as e:
             print("$$$ Service call failed: %s" % e)
 
     def get_state(self):
-        rospy.wait_for_service('/gazebo/get_model_state')
+        rospy.wait_for_service("/gazebo/get_model_state")
         print('$$$ Service: "/gazebo/set_model_state" for get called.')
         try:
-            get_state = rospy.ServiceProxy('/gazebo/get_model_state', GetModelState)
+            get_state = rospy.ServiceProxy("/gazebo/get_model_state", GetModelState)
             state = get_state(model_name=self.model_name)
             x = state.pose.position.x
             y = state.pose.position.y
             z = state.pose.position.z
             rot_q = state.pose.orientation
             roll, pitch, theta = euler_from_quaternion(
-                [rot_q.x, rot_q.y, rot_q.z, rot_q.w])
+                [rot_q.x, rot_q.y, rot_q.z, rot_q.w]
+            )
             return x, y, z, theta
         except rospy.ServiceException as e:
             print("Service call failed: %s" % e)
@@ -68,7 +71,6 @@ class Robot:
     def laser_callback(self, data):
         self.sensor_distance = data.range
 
-    
     def stop(self):
         vel_msg = Twist()
         vel_msg.linear.x = 0
@@ -99,10 +101,10 @@ class Robot:
         self.stop()
 
     def rotate(self, w, angle):  # w(|w|):degree/sec, angle:degree
-        if (w == 0 or angle == 0):
+        if w == 0 or angle == 0:
             return
         time = abs(angle / w) * 2  # *2 for 90deg instead of 45
-        angular_speed = w*PI/180
+        angular_speed = w * PI / 180
 
         if angle < 0:
             z_speed = -abs(angular_speed)
@@ -112,14 +114,14 @@ class Robot:
             z_speed = 0
 
         t0 = rospy.Time.now().to_sec()
-        while (rospy.Time.now().to_sec() - t0 < time):
+        while rospy.Time.now().to_sec() - t0 < time:
             self.set_speed(vz=z_speed)
         self.stop()
 
     def plot_robot(self):
         x, y, z, theta = self.get_state()
-        print(f'$$$ plot_robot: x={x:0.3f}, y={y:0.3f}, theta={theta:0.3f}')
-        plt.plot(x, y, color='green', marker="o", markersize=8)
+        print(f"$$$ plot_robot: x={x:0.3f}, y={y:0.3f}, theta={theta:0.3f}")
+        plt.plot(x, y, color="green", marker="o", markersize=8)
         plt.plot(*self.get_sensor_line(x, y, theta), c="green")
 
     def get_sensor_line(self, x, y, theta, range=CONFIG["SENSOR_MAX_DISTANCE"]):

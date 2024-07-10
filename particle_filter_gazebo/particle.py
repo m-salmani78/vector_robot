@@ -3,15 +3,16 @@ import matplotlib.pyplot as plt
 import math
 from configs import CONFIG
 
+
 class Particle:
     def __init__(self, x, y, theta) -> None:
         self.x = x
         self.y = y
         self.theta = theta
         self.weight = 0
-    
+
     def plot_particle(self, is_best=False):
-        plot_weight = np.clip(math.log10(self.weight+0.00000001)/10 + 1, 0, 1)
+        plot_weight = np.clip(math.log10(self.weight + 0.00000001) / 10 + 1, 0, 1)
         plt.plot(self.x, self.y, color=(0, 0, 1, plot_weight), marker="o", markersize=3)
         plt.plot(*self.get_sensor_line(range=0.04), c="blue", alpha=plot_weight)
         if is_best:
@@ -25,7 +26,7 @@ class Particle:
     def rotate(self, angle):
         self.theta += angle
         self.theta = self.normalize_angle(self.theta)
-    
+
     def normalize_angle(self, angle):
         while angle > math.pi:
             angle -= 2 * math.pi

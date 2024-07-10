@@ -9,17 +9,21 @@ from configs import CONFIG
 
 
 class Robot:
-    def __init__(self, x=0.0, y=0.0, theta=0.0, model_name='robot'):
+    def __init__(self, x=0.0, y=0.0, theta=0.0, model_name="robot"):
         self.model_name = model_name
         self.sensor_distance = 0
-        self.laser_subscriber = rospy.Subscriber('/vector/laser', Range, self.laser_callback)
-        self.velocity_publisher = rospy.Publisher('/vector/cmd_vel', Twist, queue_size=1)
+        self.laser_subscriber = rospy.Subscriber(
+            "/vector/laser", Range, self.laser_callback
+        )
+        self.velocity_publisher = rospy.Publisher(
+            "/vector/cmd_vel", Twist, queue_size=1
+        )
         time.sleep(2)
         self.stop()
 
     def laser_callback(self, data):
         self.sensor_distance = data.distance / 1000
-    
+
     def stop(self):
         self.velocity_publisher.publish(0.0, 0.0, 0.0, 0.0)
 
@@ -40,7 +44,7 @@ class Robot:
         V = 20.0 / 10  # mm/s
         L = 17.6  # cm
         PI = 3.1415926535897
-        b  = 4.8  #cm
+        b = 4.8  # cm
 
         vl = V if DEGREE > 0 else -V
         vr = -vl

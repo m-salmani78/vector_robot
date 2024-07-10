@@ -30,6 +30,7 @@ sensor_model = {
     37: {"mean": 0.000918, "std": 0.188409},
 }
 
+
 def parallel_compute_weight(particle: Particle):
     global map
     if not map.valid_point(particle.x, particle.y):
@@ -45,6 +46,7 @@ def parallel_compute_weight(particle: Particle):
     weight = stats.norm(min_distance, std).pdf(np.clip(sensor_distance + 0.042, 0, 0.4))
     weight = weight + particle.weight * 0.2
     return weight
+
 
 class ParticleFilter:
     def __init__(self, x, y, theta, map_file):
@@ -109,7 +111,10 @@ class ParticleFilter:
 
     def select_translation_time(self):
         translate_time = np.random.choice(list(self.dist_dict.keys())[1:])
-        if self.robot.sensor_distance < self.dist_dict[translate_time] + CONFIG["VECTOR_LENGTH"]:
+        if (
+            self.robot.sensor_distance
+            < self.dist_dict[translate_time] + CONFIG["VECTOR_LENGTH"]
+        ):
             translate_time = 0.0
         return translate_time
 
@@ -172,11 +177,8 @@ class ParticleFilter:
             particle.move(distance)
 
     def compute_particle_weights(self):
-        new_weights = p_map(
-            parallel_compute_weight, self.particles, num_cpus=4
-        )
+        new_weights = p_map(parallel_compute_weight, self.particles, num_cpus=4)
         new_weights = new_weights / np.sum(new_weights)
-        # print('### Weights:',new_weights)
         for idx, particle in enumerate(self.particles):
             particle.set_weight(new_weights[idx])
 
@@ -280,7 +282,12 @@ class ParticleFilter:
 
 
 def main():
-    ParticleFilter(x=-0.175, y=0.175, theta=0, map_file='/home/user/catkin_ws/src/anki_description/world/sample1.world')
+    ParticleFilter(
+        x=-0.175,
+        y=0.175,
+        theta=0,
+        map_file="/home/user/catkin_ws/src/anki_description/world/sample1.world",
+    )
 
 
 if __name__ == "__main__":
